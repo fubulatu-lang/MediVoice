@@ -11,10 +11,9 @@ class ApiClient {
       headers: {
         'Content-Type': 'application/json',
       },
-      timeout: 30000, // 30 seconds
+      timeout: 30000,
     });
 
-    // Request interceptor for auth token
     this.client.interceptors.request.use(
       (config) => {
         const tokens = localStorage.getItem('auth_tokens');
@@ -27,7 +26,6 @@ class ApiClient {
       (error) => Promise.reject(error)
     );
 
-    // Response interceptor for error handling
     this.client.interceptors.response.use(
       (response) => response,
       (error: AxiosError) => {
@@ -75,7 +73,7 @@ class ApiClient {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-      timeout: 60000, // 60 seconds for uploads
+      timeout: 60000,
     });
     
     return response.data;
