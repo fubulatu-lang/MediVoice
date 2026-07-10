@@ -1,6 +1,7 @@
 """
-Application Configuration
+Application Configuration - CLOUD ONLY VERSION
 Uses Pydantic Settings for environment variable management
+No local AI - all processing via cloud APIs
 """
 from typing import List, Optional
 from pydantic_settings import BaseSettings
@@ -24,7 +25,7 @@ class Settings(BaseSettings):
     RELOAD: bool = False
     
     # CORS
-    CORS_ORIGINS: List[str] = ["http://localhost:5173", "http://localhost:3000"]
+    CORS_ORIGINS: List[str] = ["http://localhost:5173", "http://localhost:3000", "https://medivoice.vercel.app"]
     
     @validator("CORS_ORIGINS", pre=True)
     def parse_cors_origins(cls, v):
@@ -33,10 +34,10 @@ class Settings(BaseSettings):
             return json.loads(v)
         return v
     
-    # Database
-    DATABASE_URL: str = "sqlite+aiosqlite:///./medivoice.db"
+    # Database - Neon.tech (Cloud PostgreSQL)
+    DATABASE_URL: str = "sqlite+aiosqlite:///./medivoice.db"  # Default SQLite for dev
     
-    # Redis (Optional for MVP)
+    # Redis - Upstash (Cloud Redis) - Optional for MVP
     REDIS_URL: Optional[str] = None
     
     # JWT Authentication
@@ -49,23 +50,23 @@ class Settings(BaseSettings):
     SESSION_TIMEOUT_MINUTES: int = 10
     MAX_NOTES_PER_SESSION: int = 5
     
-    # AI/ML - Groq (FREE TIER)
+    # ============================================
+    # AI/ML Configuration - CLOUD ONLY
+    # ============================================
+    
+    # Primary: Groq Cloud (FREE TIER - Recommended)
+    # Sign up at https://console.groq.com for free API key
     GROQ_API_KEY: Optional[str] = None
-    GROQ_MODEL: str = "whisper-large-v3"
-    GROQ_LLM_MODEL: str = "llama-3.1-70b-versatile"
+    GROQ_STT_MODEL: str = "whisper-large-v3"  # Speech-to-Text
+    GROQ_LLM_MODEL: str = "llama-3.1-70b-versatile"  # Note Formatting
     
-    # AI/ML - Ollama (FREE - Local)
-    OLLAMA_BASE_URL: Optional[str] = "http://localhost:11434"
-    OLLAMA_STT_MODEL: str = "whisper"
-    OLLAMA_LLM_MODEL: str = "llama3.1:8b"
-    
-    # AI/ML - OpenAI (PAID - Optional)
+    # Secondary: OpenAI (PAID - Optional fallback)
     OPENAI_API_KEY: Optional[str] = None
-    OPENAI_WHISPER_MODEL: str = "whisper-1"
+    OPENAI_STT_MODEL: str = "whisper-1"
     OPENAI_LLM_MODEL: str = "gpt-3.5-turbo"
     
-    # Active AI Provider
-    AI_PROVIDER: str = "groq"  # groq, ollama, or openai
+    # Active AI Provider: "groq" or "openai"
+    AI_PROVIDER: str = "groq"
     
     # Feature Flags
     ENABLE_MULTI_TEMPLATE: bool = False
