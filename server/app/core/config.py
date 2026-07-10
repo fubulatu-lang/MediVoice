@@ -35,7 +35,7 @@ class Settings(BaseSettings):
         return v
     
     # Database - Neon.tech (Cloud PostgreSQL)
-    DATABASE_URL: str = "sqlite+aiosqlite:///./medivoice.db"  # Default SQLite for dev
+    DATABASE_URL: str = "postgresql://neondb_owner:npg_5ubdxUCYz6PE@ep-winter-art-atv1ymgx-pooler.c-9.us-east-1.aws.neon.tech/medivoice_db?sslmode=require&channel_binding=require"  # Default SQLite for dev
     
     # Redis - Upstash (Cloud Redis) - Optional for MVP
     REDIS_URL: Optional[str] = None
