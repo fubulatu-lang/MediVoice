@@ -1,28 +1,41 @@
 """
-Database Base Configuration - SQLite for Vercel Serverless
-Uses /tmp directory for write access on Vercel
+Database Base Configuration
+Uses PostgreSQL on Neon.tech for production, SQLite for local dev
 """
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from app.core.config import settings
 
-# Use /tmp for Vercel serverless (only writable directory)
-DB_PATH = '/tmp/medivoice.db'
+# Get database URL from settings
+DATABASE_URL = settings.DATABASE_URL
 
-# Sync engine for table creation
-sync_engine = create_engine(
-    f"sqlite:///{DB_PATH}",
-    echo=False,
-    connect_args={"check_same_thread": False}
-)
-
-# Async engine for requests
-async_engine = create_async_engine(
-    f"sqlite+aiosqlite:///{DB_PATH}",
-    echo=False,
-    connect_args={"check_same_thread": False}
-)
+if "postgresql" in DATABASE_URL or "neon" in DATABASE_URL:
+    # PostgreSQL (Neon.tech)
+    sync_engine = create_engine(
+        DATABASE_URL.replace("+asyncpg", "").replace("postgresql+asyncpg://", "postgresql://"),
+        echo=False,
+    )
+    async_engine = create_async_engine(
+        DATABASE_URL,
+        echo=False,
+        pool_size=5,
+        max_overflow=10,
+    )
+else:
+    # SQLite fallback
+    DB_PATH = '/tmp/medivoice.db'
+    sync_engine = create_engine(
+        f"sqlite:///{DB_PATH}",
+        echo=False,
+        connect_args={"check_same_thread": False}
+    )
+    async_engine = create_async_engine(
+        f"sqlite+aiosqlite:///{DB_PATH}",
+        echo=False,
+        connect_args={"check_same_thread": False}
+    )
 
 # Session makers
 SyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
@@ -35,7 +48,7 @@ class Base(DeclarativeBase):
 
 
 def init_db_sync():
-    """Initialize database tables - synchronous version"""
+    """Initialize database tables"""
     Base.metadata.create_all(bind=sync_engine)
 
 
