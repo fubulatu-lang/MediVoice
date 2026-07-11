@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 export default function RegisterPage() {
-  const { register, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -13,13 +12,6 @@ export default function RegisterPage() {
     fullName: '',
   });
   const [isLoading, setIsLoading] = useState(false);
-
-  // Redirect if authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/', { replace: true });
-    }
-  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,24 +33,15 @@ export default function RegisterPage() {
         password: formData.password,
         fullName: formData.fullName || undefined,
       });
-      toast.success('Account created successfully!');
-      // Navigation happens via useEffect
+      toast.success('Account created!');
+      // Force hard redirect to dashboard
+      window.location.href = '/';
     } catch (error: any) {
       const message = error?.details?.detail || error?.message || 'Registration failed';
       toast.error(message);
-    } finally {
       setIsLoading(false);
     }
   };
-
-  // Show loading while checking auth
-  if (isAuthenticated) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-emerald-700 border-t-transparent" />
-      </div>
-    );
-  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
