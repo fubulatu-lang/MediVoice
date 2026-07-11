@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 export default function RegisterPage() {
-  const { register } = useAuth();
+  const { register, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
@@ -13,6 +13,13 @@ export default function RegisterPage() {
     fullName: '',
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  // Redirect if authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +42,7 @@ export default function RegisterPage() {
         fullName: formData.fullName || undefined,
       });
       toast.success('Account created successfully!');
-      navigate('/');
+      // Navigation happens via useEffect
     } catch (error: any) {
       const message = error?.details?.detail || error?.message || 'Registration failed';
       toast.error(message);
@@ -43,6 +50,15 @@ export default function RegisterPage() {
       setIsLoading(false);
     }
   };
+
+  // Show loading while checking auth
+  if (isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-emerald-700 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
