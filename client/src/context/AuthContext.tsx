@@ -1,15 +1,24 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import type { User, AuthTokens, LoginCredentials, RegisterData } from '../types';
+import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/api/auth';
+
+interface User {
+  id: number;
+  email: string;
+  fullName: string | null;
+  isActive: boolean;
+  isVerified: boolean;
+  createdAt: string;
+  lastLogin: string | null;
+}
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
+  login: (credentials: { email: string; password: string }) => Promise<void>;
+  register: (data: { email: string; password: string; fullName?: string }) => Promise<void>;
   logout: () => void;
-  refreshAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,9 +31,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const tokens = localStorage.getItem('auth_tokens');
       if (tokens) {
-        const parsedTokens: AuthTokens = JSON.parse(tokens);
-        const userData = await authService.getCurrentUser(parsedTokens.accessToken);
-        setUser(userData);
+        const userData = await authService.getCurrentUser();
+        setUser({
+          id: userData.id,
+          email: userData.email,
+          fullName: userData.full_name,
+          isActive: userData.is_active,
+          isVerified: userData.is_verified,
+          createdAt: userData.created_at,
+          lastLogin: userData.last_login,
+        });
       }
     } catch (error) {
       localStorage.removeItem('auth_tokens');
@@ -38,25 +54,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkAuth();
   }, [checkAuth]);
 
-  const login = async (credentials: LoginCredentials) => {
-    const tokens = await authService.login(credentials);
-    localStorage.setItem('auth_tokens', JSON.stringify(tokens));
-    const userData = await authService.getCurrentUser(tokens.accessToken);
-    setUser(userData);
+  const login = async (credentials: { email: string; password: string }) => {
+    await authService.login(credentials);
+    await checkAuth();
   };
 
-  const register = async (data: RegisterData) => {
-    const userData = await authService.register(data);
-    setUser(userData);
+  const register = async (data: { email: string; password: string; fullName?: string }) => {
+    await authService.register(data);
+    // Auto-login after registration
+    await authService.login({ email: data.email, password: data.password });
+    await checkAuth();
   };
 
   const logout = () => {
     localStorage.removeItem('auth_tokens');
     setUser(null);
-  };
-
-  const refreshAuth = async () => {
-    await checkAuth();
   };
 
   return (
@@ -68,7 +80,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         register,
         logout,
-        refreshAuth,
       }}
     >
       {children}
