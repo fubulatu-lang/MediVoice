@@ -1,14 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +29,7 @@ export default function LoginPage() {
     try {
       await login({ email, password });
       toast.success('Welcome back!');
-      navigate('/');
+      // Navigation happens via useEffect above
     } catch (error: any) {
       const message = error?.details?.detail || error?.message || 'Login failed';
       toast.error(message);
@@ -30,6 +37,15 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+  // Show loading while checking auth
+  if (isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-emerald-700 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -45,7 +61,7 @@ export default function LoginPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-50 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-50 outline-none"
-          placeholder="doctor@hospital.com"
+          placeholder="sysadmin@medivoice.com"
           required
         />
       </div>
