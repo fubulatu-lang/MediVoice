@@ -4,17 +4,20 @@ from app.core.config import settings
 from app.api.v1.endpoints import auth, health
 from app.api.v1.endpoints.transcription import router as transcription_router
 from app.api.v1.endpoints.formatting import router as formatting_router
-from app.db.database import engine, Base
-from app.api.v1.endpoints import auth_router, transcription_router, formatting_router, health_router
-
-# Create tables
-Base.metadata.create_all(bind=engine)
+# Correct import for the database module
+from app.models.database.base import engine, Base
 
 app = FastAPI(
     title="NotaMed API",
     description="Voice-to-Text Medical Note Generator",
     version="1.0.0"
 )
+
+# Create tables (with error handling to prevent startup crash)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as e:
+    print(f"⚠️ Database table creation failed: {e}")
 
 # CORS Configuration
 origins = [
