@@ -9,6 +9,9 @@
       "dest": "https://notamed-api.up.railway.app/api/v1/$1"
     },
     {
+      "handle": "filesystem"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
