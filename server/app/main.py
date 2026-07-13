@@ -1,96 +1,53 @@
-"""
-Main FastAPI Application
-"""
-from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.core.logging import setup_logging
-from app.api.v1.router import api_router
-from app.middleware.session_cleanup import SessionCleanupMiddleware
+from app.api.v1.endpoints import auth, recordings, history, templates, health
+from app.db.database import engine, Base
 
-logger = setup_logging()
+# Create tables
+Base.metadata.create_all(bind=engine)
 
+app = FastAPI(
+    title="NotaMed API",
+    description="Voice-to-Text Medical Note Generator",
+    version="1.0.0"
+)
 
-async def create_admin_user():
-    """Auto-create system admin on startup"""
-    from app.models.database.base import async_engine
-    from app.models.database.user_table import User
-    from app.core.security import get_password_hash
-    from sqlalchemy import select
-    from sqlalchemy.ext.asyncio import AsyncSession
-    from app.models.database.base import AsyncSessionLocal
-    
-    async with AsyncSessionLocal() as db:
-        try:
-            result = await db.execute(select(User).where(User.email == "sysadmin@medivoice.com"))
-            admin = result.scalar_one_or_none()
-            
-            if not admin:
-                admin = User(
-                    email="sysadmin@medivoice.com",
-                    hashed_password=get_password_hash("asdf1234"),
-                    full_name="System Administrator",
-                    is_active=True,
-                    is_verified=True,
-                )
-                db.add(admin)
-                await db.commit()
-                logger.info("✅ Admin user created")
-            else:
-                logger.info("✅ Admin user already exists")
-        except Exception as e:
-            await db.rollback()
-            logger.error("Admin creation failed", error=str(e))
+# CORS Configuration - Allow your frontend
+origins = [
+    "https://notamed.vercel.app",
+    "http://localhost:5173",  # For local development
+    "http://localhost:3000",  # Alternative local dev
+]
 
+if settings.CORS_ORIGINS:
+    origins.extend(settings.CORS_ORIGINS.split(","))
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Application lifespan manager"""
-    logger.info("🚀 Starting MediVoice API")
-    
-    # Initialize database
-    from app.models.database.base import init_db
-    await init_db()
-    logger.info("✅ Database tables created")
-    
-    # Create admin user
-    await create_admin_user()
-    
-    yield
-    
-    logger.info("👋 Shutting down")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+# Include routers
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(recordings.router, prefix="/api/v1/recordings", tags=["recordings"])
+app.include_router(history.router, prefix="/api/v1/history", tags=["history"])
+app.include_router(templates.router, prefix="/api/v1/templates", tags=["templates"])
+app.include_router(health.router, prefix="/api/v1/health", tags=["health"])
 
-def create_app() -> FastAPI:
-    app = FastAPI(
-        title=settings.APP_NAME,
-        version=settings.APP_VERSION,
-        description="Clinical Voice-to-Text Notes API",
-        docs_url="/docs",
-        lifespan=lifespan,
-    )
-    
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["https://medivoice2.vercel.app"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-    
-    app.add_middleware(SessionCleanupMiddleware)
-    app.include_router(api_router, prefix=settings.API_PREFIX)
-    
-    @app.get("/health")
-    async def health_check():
-        return {"status": "healthy", "version": settings.APP_VERSION, "database": "connected"}
-    
-    @app.get("/")
-    async def root():
-        return {"message": "MediVoice API", "docs": "/docs"}
-    
-    return app
+# Root endpoint
+@app.get("/")
+async def root():
+    return {"message": "NotaMed API is running"}
 
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
 
-app = create_app()
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
