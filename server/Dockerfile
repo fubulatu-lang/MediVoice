@@ -29,5 +29,5 @@ USER appuser
 # Expose port
 EXPOSE 8000
 
-# Start the application using the installed uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start the application – use shell to expand $PORT, default to 8000
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
