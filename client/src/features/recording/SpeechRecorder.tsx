@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { formatNote, saveNote } from '../../api/notes';
+
 
 const SpeechRecorder = () => {
   const [transcript, setTranscript] = useState('');
@@ -21,6 +22,8 @@ const SpeechRecorder = () => {
     rec.continuous = false;
     rec.interimResults = true;
     rec.maxAlternatives = 1;
+    rec.onresult = (event: SpeechRecognitionEvent) => { ... };
+    rec.onerror = (event: SpeechRecognitionErrorEvent) => { ... };
 
     rec.onresult = (event) => {
       const final = Array.from(event.results)
