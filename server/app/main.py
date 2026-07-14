@@ -16,7 +16,7 @@ app.include_router(health.router, prefix="/api/v1/health", tags=["health"])
 
 
 app = FastAPI(
-    title="NotaMed API",
+    title="NotaMed API v1.0.0",
     description="Voice-to-Text Medical Note Generator",
     version="1.0.0"
 )
