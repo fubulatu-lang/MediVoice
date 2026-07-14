@@ -6,6 +6,14 @@ from app.api.v1.endpoints.transcription import router as transcription_router
 from app.api.v1.endpoints.formatting import router as formatting_router
 # Correct import for the database module
 from app.models.database.base import engine, Base
+from app.api.v1.endpoints import notes
+
+# ... inside app creation:
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(notes.router, prefix="/api/v1", tags=["notes"])  # <-- add this
+app.include_router(formatting.router, prefix="/api/v1/formatting", tags=["formatting"])
+app.include_router(health.router, prefix="/api/v1/health", tags=["health"])
+
 
 app = FastAPI(
     title="NotaMed API",
