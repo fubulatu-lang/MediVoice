@@ -2,6 +2,30 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { formatNote, saveNote } from '../../api/notes';
 
+// Extend Window interface to include SpeechRecognition
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
+}
+
+interface SpeechRecognitionEvent {
+  results: {
+    length: number;
+    [index: number]: {
+      isFinal: boolean;
+      [index: number]: {
+        transcript: string;
+        confidence: number;
+      };
+    };
+  };
+}
+
+interface SpeechRecognitionErrorEvent {
+  error: string;
+}
 
 const SpeechRecorder = () => {
   const [transcript, setTranscript] = useState('');
@@ -9,42 +33,41 @@ const SpeechRecorder = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [soapNote, setSoapNote] = useState<any>(null);
   const { user } = useAuth();
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
       alert('Your browser does not support speech recognition. Please use Chrome.');
       return;
     }
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const rec = new SpeechRecognition();
     rec.lang = 'en-US';
     rec.continuous = false;
     rec.interimResults = true;
     rec.maxAlternatives = 1;
-    rec.onresult = (event: SpeechRecognitionEvent) => { ... };
-    rec.onerror = (event: SpeechRecognitionErrorEvent) => { ... };
 
-    rec.onresult = (event) => {
-      const final = Array.from(event.results)
-        .filter(result => result.isFinal)
-        .map(result => result[0].transcript)
-        .join('');
-      const interim = Array.from(event.results)
-        .filter(result => !result.isFinal)
-        .map(result => result[0].transcript)
-        .join('');
+    rec.onresult = (event: SpeechRecognitionEvent) => {
+      let final = '';
+      let interim = '';
+      for (let i = 0; i < event.results.length; i++) {
+        const result = event.results[i];
+        if (result.isFinal) {
+          final += result[0].transcript;
+        } else {
+          interim += result[0].transcript;
+        }
+      }
       setTranscript(final || interim);
     };
 
-    rec.onerror = (event) => {
+    rec.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error('Speech recognition error:', event.error);
       setIsListening(false);
     };
 
     rec.onend = () => {
       setIsListening(false);
-      // Auto‑process when speech ends (optional)
     };
 
     recognitionRef.current = rec;
@@ -71,8 +94,6 @@ const SpeechRecorder = () => {
     try {
       const result = await formatNote(transcript, 'SOAP');
       setSoapNote(result.formatted_note);
-      // Optionally auto‑save
-      // await saveNote({ transcript, soap_note: result.formatted_note, template: 'SOAP' });
     } catch (err) {
       console.error('Formatting failed:', err);
       alert('Failed to format note. Please try again.');
