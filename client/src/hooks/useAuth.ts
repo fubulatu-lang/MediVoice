@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAuthToken, setAuthToken, removeAuthToken, login, register, logout } from '../api/auth';
+import { getAuthToken, login, register, logout } from '../api/auth';
 
 interface User {
   id: string;
