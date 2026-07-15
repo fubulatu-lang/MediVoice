@@ -1,19 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.v1.endpoints import auth, health
-from app.api.v1.endpoints.transcription import router as transcription_router
-from app.api.v1.endpoints.formatting import router as formatting_router
-# Correct import for the database module
-from app.models.database.base import engine, Base
-from app.api.v1.endpoints import notes
-
-# ... inside app creation:
-app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
-app.include_router(notes.router, prefix="/api/v1", tags=["notes"])  # <-- add this
-app.include_router(formatting.router, prefix="/api/v1/formatting", tags=["formatting"])
-app.include_router(health.router, prefix="/api/v1/health", tags=["health"])
-
+from app.api.v1.endpoints import formatting, health
 
 app = FastAPI(
     title="NotaMed API v1.0.0",
@@ -21,19 +9,12 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Create tables (with error handling to prevent startup crash)
-try:
-    Base.metadata.create_all(bind=engine)
-except Exception as e:
-    print(f"⚠️ Database table creation failed: {e}")
-
 # CORS Configuration
 origins = [
     "https://notamed.vercel.app",
     "http://localhost:5173",
     "http://localhost:3000",
 ]
-
 if settings.CORS_ORIGINS:
     origins.extend(settings.CORS_ORIGINS.split(","))
 
@@ -45,18 +26,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
-app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
-app.include_router(transcription_router, prefix="/api/v1/recordings", tags=["recordings"])
-app.include_router(formatting_router, prefix="/api/v1/formatting", tags=["formatting"])
+# Include routers (no authentication)
+app.include_router(formatting.router, prefix="/api/v1/formatting", tags=["formatting"])
 app.include_router(health.router, prefix="/api/v1/health", tags=["health"])
 
-# Root endpoint
 @app.get("/")
 async def root():
     return {"message": "NotaMed API is running"}
 
-# Health check endpoint
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
