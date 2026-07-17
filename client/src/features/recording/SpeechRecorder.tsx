@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { config } from '../../api/config';
 
 declare global {
   interface Window {
@@ -14,6 +13,8 @@ const SpeechRecorder = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [soapNote, setSoapNote] = useState<any>(null);
   const recognitionRef = useRef<any>(null);
+
+  const API_URL = import.meta.env.VITE_API_URL || 'https://notamed-api.up.railway.app/api/v1';
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -72,7 +73,7 @@ const SpeechRecorder = () => {
     if (!transcript.trim()) return;
     setIsProcessing(true);
     try {
-      const res = await fetch(config.api.endpoints.formatting.note, {
+      const res = await fetch(`${API_URL}/formatting/note`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ transcript, template: 'SOAP' }),
