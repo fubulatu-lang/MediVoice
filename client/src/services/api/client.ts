@@ -5,7 +5,7 @@ class ApiClient {
   private client: AxiosInstance;
 
   constructor() {
-    const BASE_URL = 'https://medivoice-api.vercel.app/api/v1';
+    const BASE_URL = 'https://notamed-api.up.railway.app/api/v1';
     
     this.client = axios.create({
       baseURL: BASE_URL,
