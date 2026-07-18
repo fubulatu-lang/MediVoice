@@ -73,11 +73,9 @@ const SpeechRecorder = () => {
   };
 
   const handleProcess = async () => {
-    // Validate transcript
     const trimmed = transcript.trim();
     if (!trimmed) {
       setError('Please speak something before processing.');
-      alert('Please speak something first.');
       return;
     }
 
@@ -85,7 +83,7 @@ const SpeechRecorder = () => {
     setError(null);
 
     const payload = { transcript: trimmed, template: 'SOAP' };
-    console.log('📤 Sending to backend:', payload);
+    console.log('📤 Sending:', payload);
 
     try {
       const res = await fetch(`${API_URL}/formatting/note`, {
@@ -94,62 +92,74 @@ const SpeechRecorder = () => {
         body: JSON.stringify(payload),
       });
 
-      // Handle non-200 responses
       if (!res.ok) {
-        let errorMsg = `Server error: ${res.status}`;
-        try {
-          const errData = await res.json();
-          if (errData.detail) {
-            errorMsg = Array.isArray(errData.detail) 
-              ? errData.detail.map((d: any) => d.msg).join(', ')
-              : errData.detail;
-          }
-        } catch (e) {
-          // If response isn't JSON, use status text
-          errorMsg = `Server error: ${res.status} ${res.statusText}`;
-        }
-        throw new Error(errorMsg);
+        const errData = await res.json();
+        throw new Error(errData.detail || `Server error: ${res.status}`);
       }
 
       const data = await res.json();
-      console.log('📥 Received from backend:', data);
+      console.log('📥 Received:', data);
       setSoapNote(data.formatted_note);
     } catch (err) {
       console.error('Formatting failed:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
-      alert(`Failed to format note: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const copyToClipboard = () => {
-    if (soapNote) {
-      navigator.clipboard.writeText(JSON.stringify(soapNote, null, 2));
-    }
-  };
-
   return (
-    <div className="recording-container">
-      <h3>Dictate your clinical note</h3>
+    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px', fontFamily: 'sans-serif' }}>
+      <h1 style={{ fontSize: '24px', marginBottom: '20px' }}>Clinical Dictation</h1>
       
       {error && (
-        <div className="error-message" style={{ color: 'red', padding: '10px', background: '#ffeeee', borderRadius: '4px' }}>
+        <div style={{ color: 'red', padding: '10px', background: '#ffeeee', borderRadius: '4px', marginBottom: '10px' }}>
           ⚠️ {error}
         </div>
       )}
       
-      <div className="transcript-box" style={{ minHeight: '80px', border: '1px solid #ccc', padding: '10px', margin: '10px 0' }}>
+      <div style={{ 
+        minHeight: '100px', 
+        border: '2px solid #ccc', 
+        borderRadius: '8px', 
+        padding: '15px', 
+        marginBottom: '20px',
+        background: '#f9f9f9',
+        fontSize: '16px',
+        lineHeight: '1.5'
+      }}>
         {transcript || 'Tap the mic and start speaking...'}
       </div>
       
-      <div className="controls">
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
         {!isListening ? (
-          <button onClick={startListening} className="mic-button" style={{ padding: '10px 20px', fontSize: '16px' }}>
+          <button 
+            onClick={startListening} 
+            style={{ 
+              padding: '12px 24px', 
+              fontSize: '16px', 
+              background: '#4CAF50', 
+              color: 'white', 
+              border: 'none', 
+              borderRadius: '8px',
+              cursor: 'pointer'
+            }}
+          >
             🎤 Start
           </button>
         ) : (
-          <button onClick={stopListening} className="stop-button" style={{ padding: '10px 20px', fontSize: '16px', background: 'red', color: 'white' }}>
+          <button 
+            onClick={stopListening} 
+            style={{ 
+              padding: '12px 24px', 
+              fontSize: '16px', 
+              background: '#f44336', 
+              color: 'white', 
+              border: 'none', 
+              borderRadius: '8px',
+              cursor: 'pointer'
+            }}
+          >
             ⏹ Stop
           </button>
         )}
@@ -158,7 +168,16 @@ const SpeechRecorder = () => {
           <button 
             onClick={handleProcess} 
             disabled={isProcessing}
-            style={{ padding: '10px 20px', fontSize: '16px', marginLeft: '10px' }}
+            style={{ 
+              padding: '12px 24px', 
+              fontSize: '16px', 
+              background: '#2196F3', 
+              color: 'white', 
+              border: 'none', 
+              borderRadius: '8px',
+              cursor: isProcessing ? 'not-allowed' : 'pointer',
+              opacity: isProcessing ? 0.6 : 1
+            }}
           >
             {isProcessing ? '⏳ Generating...' : '📝 Generate SOAP'}
           </button>
@@ -166,15 +185,31 @@ const SpeechRecorder = () => {
       </div>
       
       {soapNote && (
-        <div className="soap-result" style={{ marginTop: '20px', border: '1px solid #ddd', padding: '15px', borderRadius: '4px' }}>
-          <h4>SOAP Note</h4>
-          <div className="soap-content">
+        <div style={{ 
+          marginTop: '30px', 
+          border: '1px solid #ddd', 
+          borderRadius: '8px', 
+          padding: '20px',
+          background: 'white'
+        }}>
+          <h2 style={{ fontSize: '20px', marginBottom: '15px' }}>SOAP Note</h2>
+          <div style={{ marginBottom: '15px' }}>
             <p><strong>Subjective:</strong> {soapNote.subjective || 'N/A'}</p>
             <p><strong>Objective:</strong> {soapNote.objective || 'N/A'}</p>
             <p><strong>Assessment:</strong> {soapNote.assessment || 'N/A'}</p>
             <p><strong>Plan:</strong> {soapNote.plan || 'N/A'}</p>
           </div>
-          <button onClick={copyToClipboard} style={{ marginTop: '10px', padding: '8px 16px' }}>
+          <button 
+            onClick={() => navigator.clipboard.writeText(JSON.stringify(soapNote, null, 2))}
+            style={{ 
+              padding: '8px 16px', 
+              background: '#607D8B', 
+              color: 'white', 
+              border: 'none', 
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
             📋 Copy SOAP
           </button>
         </div>
