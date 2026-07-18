@@ -5,6 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.endpoints import formatting, health
 from app.core.config import settings
 
+# Import database models to register them with SQLAlchemy
+import app.models.database  # <-- Ensures all models are loaded
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version="1.0.0",
@@ -13,19 +16,13 @@ app = FastAPI(
 
 # Configure CORS
 def get_cors_origins() -> list[str]:
-    """Parse CORS origins from settings, allow wildcard in development."""
     origins = []
-    # Parse comma-separated list
     for origin in settings.CORS_ORIGINS.split(","):
         origin = origin.strip()
         if origin:
             origins.append(origin)
-
-    # In development, allow all (by adding "*")
     if settings.ENVIRONMENT == "development" and settings.DEBUG:
         origins.append("*")
-
-    # Remove duplicates while preserving order
     seen = set()
     unique_origins = []
     for origin in origins:
