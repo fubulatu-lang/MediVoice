@@ -16,7 +16,7 @@ export const SpeechRecorder: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
-  const silenceTimeoutRef = useRef<number | null>(null); // <-- changed from NodeJS.Timeout
+  const silenceTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -32,7 +32,8 @@ export const SpeechRecorder: React.FC = () => {
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => { // <-- added type
+    // Use 'any' to bypass TypeScript's incomplete definitions
+    recognition.onresult = (event: any) => {
       let final = '';
       let interim = '';
       for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -51,7 +52,7 @@ export const SpeechRecorder: React.FC = () => {
       }
     };
 
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => { // <-- added type
+    recognition.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error);
       if (event.error === 'not-allowed') {
         setError('Microphone access denied. Please allow microphone access and try again.');
@@ -75,7 +76,7 @@ export const SpeechRecorder: React.FC = () => {
         clearTimeout(silenceTimeoutRef.current);
       }
     };
-  }, []);
+  }, [isListening]);
 
   const startListening = () => {
     if (!recognitionRef.current) {
