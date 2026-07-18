@@ -8,6 +8,17 @@ import { apiClient } from "@/lib/api-client";
 import { formatDistanceToNow } from "date-fns";
 import { Mic, FileText, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { Suspense } from "react";
+import DashboardContent from "./DashboardContent";
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><div className="h-8 w-8 animate-spin rounded-full border-4 border-white/20 border-t-white" /></div>}>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
 
 interface Note {
   id: string;
