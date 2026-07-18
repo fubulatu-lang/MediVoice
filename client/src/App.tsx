@@ -1,9 +1,18 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import AppLayout from './layouts/AppLayout';
+import DashboardPage from './features/dashboard/DashboardPage';
+import RecordingPage from './features/recording/RecordingPage';
+
 function App() {
   return (
-    <div style={{ textAlign: 'center', padding: '50px' }}>
-      <h1>Hello World - NotaMed</h1>
-      <p>If you see this, the app is loading properly.</p>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<AppLayout />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="record" element={<RecordingPage />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
