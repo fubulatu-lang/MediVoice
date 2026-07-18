@@ -111,18 +111,18 @@ const SpeechRecorder = () => {
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px', fontFamily: 'sans-serif' }}>
       <h1 style={{ fontSize: '24px', marginBottom: '20px' }}>Clinical Dictation</h1>
-      
+
       {error && (
         <div style={{ color: 'red', padding: '10px', background: '#ffeeee', borderRadius: '4px', marginBottom: '10px' }}>
           ⚠️ {error}
         </div>
       )}
-      
-      <div style={{ 
-        minHeight: '100px', 
-        border: '2px solid #ccc', 
-        borderRadius: '8px', 
-        padding: '15px', 
+
+      <div style={{
+        minHeight: '100px',
+        border: '2px solid #ccc',
+        borderRadius: '8px',
+        padding: '15px',
         marginBottom: '20px',
         background: '#f9f9f9',
         fontSize: '16px',
@@ -130,17 +130,17 @@ const SpeechRecorder = () => {
       }}>
         {transcript || 'Tap the mic and start speaking...'}
       </div>
-      
+
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
         {!isListening ? (
-          <button 
-            onClick={startListening} 
-            style={{ 
-              padding: '12px 24px', 
-              fontSize: '16px', 
-              background: '#4CAF50', 
-              color: 'white', 
-              border: 'none', 
+          <button
+            onClick={startListening}
+            style={{
+              padding: '12px 24px',
+              fontSize: '16px',
+              background: '#4CAF50',
+              color: 'white',
+              border: 'none',
               borderRadius: '8px',
               cursor: 'pointer'
             }}
@@ -148,14 +148,14 @@ const SpeechRecorder = () => {
             🎤 Start
           </button>
         ) : (
-          <button 
-            onClick={stopListening} 
-            style={{ 
-              padding: '12px 24px', 
-              fontSize: '16px', 
-              background: '#f44336', 
-              color: 'white', 
-              border: 'none', 
+          <button
+            onClick={stopListening}
+            style={{
+              padding: '12px 24px',
+              fontSize: '16px',
+              background: '#f44336',
+              color: 'white',
+              border: 'none',
               borderRadius: '8px',
               cursor: 'pointer'
             }}
@@ -163,17 +163,17 @@ const SpeechRecorder = () => {
             ⏹ Stop
           </button>
         )}
-        
+
         {transcript && !isListening && (
-          <button 
-            onClick={handleProcess} 
+          <button
+            onClick={handleProcess}
             disabled={isProcessing}
-            style={{ 
-              padding: '12px 24px', 
-              fontSize: '16px', 
-              background: '#2196F3', 
-              color: 'white', 
-              border: 'none', 
+            style={{
+              padding: '12px 24px',
+              fontSize: '16px',
+              background: '#2196F3',
+              color: 'white',
+              border: 'none',
               borderRadius: '8px',
               cursor: isProcessing ? 'not-allowed' : 'pointer',
               opacity: isProcessing ? 0.6 : 1
@@ -183,12 +183,12 @@ const SpeechRecorder = () => {
           </button>
         )}
       </div>
-      
+
       {soapNote && (
-        <div style={{ 
-          marginTop: '30px', 
-          border: '1px solid #ddd', 
-          borderRadius: '8px', 
+        <div style={{
+          marginTop: '30px',
+          border: '1px solid #ddd',
+          borderRadius: '8px',
           padding: '20px',
           background: 'white'
         }}>
@@ -199,13 +199,13 @@ const SpeechRecorder = () => {
             <p><strong>Assessment:</strong> {soapNote.assessment || 'N/A'}</p>
             <p><strong>Plan:</strong> {soapNote.plan || 'N/A'}</p>
           </div>
-          <button 
+          <button
             onClick={() => navigator.clipboard.writeText(JSON.stringify(soapNote, null, 2))}
-            style={{ 
-              padding: '8px 16px', 
-              background: '#607D8B', 
-              color: 'white', 
-              border: 'none', 
+            style={{
+              padding: '8px 16px',
+              background: '#607D8B',
+              color: 'white',
+              border: 'none',
               borderRadius: '4px',
               cursor: 'pointer'
             }}
