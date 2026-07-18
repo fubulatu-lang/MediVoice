@@ -1,0 +1,49 @@
+notamed-mvp/
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── v1/
+│   │   │       ├── __init__.py
+│   │   │       ├── auth.py
+│   │   │       └── transcriptions.py
+│   │   ├── core/
+│   │   │   ├── config.py
+│   │   │   ├── database.py
+│   │   │   ├── security.py
+│   │   │   └── exceptions.py
+│   │   ├── models/
+│   │   │   ├── user.py
+│   │   │   └── task.py
+│   │   ├── schemas/
+│   │   │   ├── auth.py
+│   │   │   └── task.py
+│   │   ├── services/
+│   │   │   └── groq_service.py
+│   │   └── main.py
+│   ├── migrations/            (alembic init)
+│   ├── requirements.txt
+│   └── vercel.json
+├── frontend/
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── (auth)/
+│   │   │   │   ├── login/
+│   │   │   │   └── register/
+│   │   │   ├── (dashboard)/
+│   │   │   │   ├── dashboard/
+│   │   │   │   ├── record/
+│   │   │   │   └── note/[id]/
+│   │   │   ├── layout.tsx
+│   │   │   └── providers.tsx
+│   │   ├── components/
+│   │   │   ├── ui/            (Button, Card, Input, etc.)
+│   │   │   └── glass/         (GlassCard, GlassBackground)
+│   │   ├── hooks/
+│   │   │   ├── use-audio-recorder.ts
+│   │   │   └── use-auth.ts
+│   │   └── lib/
+│   │       ├── api-client.ts
+│   │       └── utils.ts
+│   ├── tailwind.config.js
+│   └── package.json
+└── .env.example
